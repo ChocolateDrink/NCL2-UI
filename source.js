@@ -1,7 +1,7 @@
 const core = {
 	version: '1.0',
 
-	_toCamelCase: (text) => {
+	toCamelCase: (text) => {
 		return text
 			.toLowerCase()
 			.split(' ')
@@ -10,7 +10,7 @@ const core = {
 	},
 
 	ui: {
-		state: {
+		_state: {
 			thisLogId: null,
 			dragging: false,
 			dragOffset: { x: 0, y: 0 },
@@ -18,7 +18,7 @@ const core = {
 			logTextareas: {}
 		},
 
-		_makeElement: (type, thing, text = '') => {
+		makeElement: (type, thing, text = '') => {
 			const element = document.createElement(type);
 			if (thing) element.className = thing;
 			if (text) element.textContent = text;
@@ -27,15 +27,15 @@ const core = {
 	},
 
 	modules: {
-		_add: (options) => {
+		add: (options) => {
 			const { id, tip } = options;
 
-			const moduleContainer = core.ui._makeElement('div', 'module-container');
-			const moduleContent = core.ui._makeElement('div', 'module-content');
-			const textContainer = core.ui._makeElement('div', 'module-text-container');
-			const moduleName = core.ui._makeElement('div', 'module-name', id);
-			const moduleDesc = core.ui._makeElement('div', 'module-description', tip);
-			const bindButton = core.ui._makeElement('button', 'module-bind', 'none');
+			const moduleContainer = core.ui.makeElement('div', 'module-container');
+			const moduleContent = core.ui.makeElement('div', 'module-content');
+			const textContainer = core.ui.makeElement('div', 'module-text-container');
+			const moduleName = core.ui.makeElement('div', 'module-name', id);
+			const moduleDesc = core.ui.makeElement('div', 'module-description', tip);
+			const bindButton = core.ui.makeElement('button', 'module-bind', 'none');
 
 			let enabled = false;
 			let thisBind = null;
@@ -130,21 +130,21 @@ const core = {
 				}
 			};
 
-			core.modules[core._toCamelCase(id)] = moduleObj;
+			core.modules[core.toCamelCase(id)] = moduleObj;
 			return moduleObj;
 		}
 	},
 
 	settings: {
-		_addBind: (options) => {
+		addBind: (options) => {
 			const { id, tip, bind } = options;
 
-			const settingsContainer = core.ui._makeElement('div', 'module-container');
-			const settingsContent = core.ui._makeElement('div', 'module-content');
-			const textContainer = core.ui._makeElement('div', 'module-text-container');
-			const settingsName = core.ui._makeElement('div', 'module-name', id);
-			const settingsDesc = core.ui._makeElement('div', 'module-description', tip);
-			const bindButton = core.ui._makeElement('button', 'module-bind', bind ? bind.toUpperCase() : 'none');
+			const settingsContainer = core.ui.makeElement('div', 'module-container');
+			const settingsContent = core.ui.makeElement('div', 'module-content');
+			const textContainer = core.ui.makeElement('div', 'module-text-container');
+			const settingsName = core.ui.makeElement('div', 'module-name', id);
+			const settingsDesc = core.ui.makeElement('div', 'module-description', tip);
+			const bindButton = core.ui.makeElement('button', 'module-bind', bind ? bind.toUpperCase() : 'none');
 
 			let thisBind = bind ? bind.toUpperCase() : null;
 			let binding = false;
@@ -226,17 +226,17 @@ const core = {
 				}
 			};
 
-			core.settings[core._toCamelCase(id)] = settingsObj;
+			core.settings[core.toCamelCase(id)] = settingsObj;
 			return settingsObj;
 		},
-		_addToggle: (options) => {
+		addToggle: (options) => {
 			const { id, tip } = options;
 
-			const settingsContainer = core.ui._makeElement('div', 'module-container');
-			const settingsContent = core.ui._makeElement('div', 'module-content');
-			const textContainer = core.ui._makeElement('div', 'module-text-container');
-			const settingsName = core.ui._makeElement('div', 'module-name', id);
-			const settingsDesc = core.ui._makeElement('div', 'module-description', tip);
+			const settingsContainer = core.ui.makeElement('div', 'module-container');
+			const settingsContent = core.ui.makeElement('div', 'module-content');
+			const textContainer = core.ui.makeElement('div', 'module-text-container');
+			const settingsName = core.ui.makeElement('div', 'module-name', id);
+			const settingsDesc = core.ui.makeElement('div', 'module-description', tip);
 
 			let enabled = false;
 			let onEnabled = () => {};
@@ -281,18 +281,18 @@ const core = {
 				}
 			};
 
-			core.settings[core._toCamelCase(id)] = settingsObj;
+			core.settings[core.toCamelCase(id)] = settingsObj;
 			return settingsObj;
 		}
 	},
 
 	saves: {
-		_save: () => {
+		save: () => {
 			const moduleData = {};
 			const settingsData = {};
 
 			Object.entries(core.modules).forEach(([id, module]) => {
-				if (id.startsWith('_')) return;
+				if (typeof module !== 'object') return;
 
 				moduleData[id] = {
 					enabled: module.getState(),
@@ -301,7 +301,7 @@ const core = {
 			});
 
 			Object.entries(core.settings).forEach(([id, module]) => {
-				if (id.startsWith('_')) return;
+				if (typeof module !== 'object') return;
 
 				settingsData[id] = {
 					enabled: module.getState ? module.getState() : null,
@@ -309,12 +309,12 @@ const core = {
 				};
 			});
 
-			const uiPos = core.ui.state.container;
+			const uiPos = core.ui._state.container;
 			const pos = {left: uiPos.style.left, top: uiPos.style.top};
 
 			localStorage.setItem('ncl2', JSON.stringify({ moduleData, settingsData, pos }));
 		},
-		_load: () => {
+		load: () => {
 			try {
 				const saved = localStorage.getItem('ncl2');
 				if (!saved) return;
@@ -352,8 +352,8 @@ const core = {
 				}
 
 				if (data.pos) {
-					core.ui.state.container.style.left = data.pos.left;
-					core.ui.state.container.style.top = data.pos.top;
+					core.ui._state.container.style.left = data.pos.left;
+					core.ui._state.container.style.top = data.pos.top;
 				}
 
 				core.ui.output.add('✔️ Successfully loaded config');
@@ -363,11 +363,11 @@ const core = {
 				core.ui.output.add(ex);
 			}
 		},
-		_init: () => {
-			setInterval(core.saves._save, 5000);
+		init: () => {
+			setInterval(core.saves.save, 5000);
 
-			window.addEventListener('beforeunload', core.saves._save);
-			core.saves._load();
+			window.addEventListener('beforeunload', core.saves.save);
+			core.saves.load();
 		}
 	}
 };
@@ -376,34 +376,34 @@ const core = {
 (() => {
 	core.ui.output = {
 		add: (text) => {
-			if (!core.ui.state.logTextareas.output) return;
-			core.ui.state.logTextareas.output.value += (core.ui.state.logTextareas.output.value ? '\n' : '') + text;
-			core.ui.state.logTextareas.output.scrollTop = core.ui.state.logTextareas.output.scrollHeight;
+			if (!core.ui._state.logTextareas.output) return;
+			core.ui._state.logTextareas.output.value += (core.ui._state.logTextareas.output.value ? '\n' : '') + text;
+			core.ui._state.logTextareas.output.scrollTop = core.ui._state.logTextareas.output.scrollHeight;
 		},
 		clear: () => {
-			if (!core.ui.state.logTextareas.output) return;
-			core.ui.state.logTextareas.output.value = '';
+			if (!core.ui._state.logTextareas.output) return;
+			core.ui._state.logTextareas.output.value = '';
 		},
 		copy: () => {
-			if (!core.ui.state.logTextareas.output) return;
-			core.ui.state.logTextareas.output.select();
+			if (!core.ui._state.logTextareas.output) return;
+			core.ui._state.logTextareas.output.select();
 			document.execCommand('copy');
 			window.getSelection().removeAllRanges();
 		}
 	};
 	core.ui.debug = {
 		add: (text) => {
-			if (!core.ui.state.logTextareas.debug) return;
-			core.ui.state.logTextareas.debug.value += (core.ui.state.logTextareas.debug.value ? '\n' : '') + text;
-			core.ui.state.logTextareas.debug.scrollTop = core.ui.state.logTextareas.debug.scrollHeight;
+			if (!core.ui._state.logTextareas.debug) return;
+			core.ui._state.logTextareas.debug.value += (core.ui._state.logTextareas.debug.value ? '\n' : '') + text;
+			core.ui._state.logTextareas.debug.scrollTop = core.ui._state.logTextareas.debug.scrollHeight;
 		},
 		clear: () => {
-			if (!core.ui.state.logTextareas.debug) return;
-			core.ui.state.logTextareas.debug.value = '';
+			if (!core.ui._state.logTextareas.debug) return;
+			core.ui._state.logTextareas.debug.value = '';
 		},
 		copy: () => {
-			if (!core.ui.state.logTextareas.debug) return;
-			core.ui.state.logTextareas.debug.select();
+			if (!core.ui._state.logTextareas.debug) return;
+			core.ui._state.logTextareas.debug.select();
 			document.execCommand('copy');
 			window.getSelection().removeAllRanges();
 		}
@@ -643,44 +643,44 @@ const core = {
 	document.head.appendChild(style);
 
 	(() => {
-		core.ui.state.container = core.ui._makeElement('div', 'container');
-		core.ui.state.container.style.width = '600px';
-		core.ui.state.container.style.height = '400px';
-		core.ui.state.container.style.left = '100px';
-		core.ui.state.container.style.top = '100px';
+		core.ui._state.container = core.ui.makeElement('div', 'container');
+		core.ui._state.container.style.width = '600px';
+		core.ui._state.container.style.height = '400px';
+		core.ui._state.container.style.left = '100px';
+		core.ui._state.container.style.top = '100px';
 
-		const header = core.ui._makeElement('div', 'header');
+		const header = core.ui.makeElement('div', 'header');
 		const tabs = ['main', 'output', 'debug', 'settings'];
 		tabs.forEach((tab, index) => {
-			const tabElement = core.ui._makeElement('div', `tab${index === 0 ? ' active' : ''}`, tab.charAt(0).toUpperCase() + tab.slice(1));
+			const tabElement = core.ui.makeElement('div', `tab${index === 0 ? ' active' : ''}`, tab.charAt(0).toUpperCase() + tab.slice(1));
 			tabElement.setAttribute('data-tab', tab);
 			header.appendChild(tabElement);
 		});
 
-		const content = core.ui._makeElement('div', 'content');
+		const content = core.ui.makeElement('div', 'content');
 		tabs.forEach((tab, index) => {
-			const panel = core.ui._makeElement('div', `panel${index === 0 ? ' active' : ''}`);
+			const panel = core.ui.makeElement('div', `panel${index === 0 ? ' active' : ''}`);
 			panel.id = tab;
 
 			if (tab === 'output' || tab === 'debug') {
-				const textarea = core.ui._makeElement('textarea', 'textarea');
+				const textarea = core.ui.makeElement('textarea', 'textarea');
 				textarea.id = `${tab}-log`;
 				textarea.readOnly = true;
-				core.ui.state.logTextareas[tab] = textarea;
+				core.ui._state.logTextareas[tab] = textarea;
 				panel.appendChild(textarea);
 			}
 
 			content.appendChild(panel);
 		});
 
-		const bottomBar = core.ui._makeElement('div', 'bottom');
-		const versionSpan = core.ui._makeElement('span', '', `version: ${core.version}`);
-		const buttonContainer = core.ui._makeElement('div', 'buttons');
+		const bottomBar = core.ui.makeElement('div', 'bottom');
+		const versionSpan = core.ui.makeElement('span', '', `version: ${core.version}`);
+		const buttonContainer = core.ui.makeElement('div', 'buttons');
 		buttonContainer.style.display = 'none';
 
-		const clearButton = core.ui._makeElement('button', 'button', 'Clear');
+		const clearButton = core.ui.makeElement('button', 'button', 'Clear');
 		clearButton.setAttribute('data-action', 'clear');
-		const copyButton = core.ui._makeElement('button', 'button', 'Copy All');
+		const copyButton = core.ui.makeElement('button', 'button', 'Copy All');
 		copyButton.setAttribute('data-action', 'copy');
 
 		buttonContainer.appendChild(clearButton);
@@ -688,13 +688,13 @@ const core = {
 		bottomBar.appendChild(versionSpan);
 		bottomBar.appendChild(buttonContainer);
 
-		core.ui.state.container.appendChild(header);
-		core.ui.state.container.appendChild(content);
-		core.ui.state.container.appendChild(bottomBar);
-		document.body.appendChild(core.ui.state.container);
+		core.ui._state.container.appendChild(header);
+		core.ui._state.container.appendChild(content);
+		core.ui._state.container.appendChild(bottomBar);
+		document.body.appendChild(core.ui._state.container);
 
-		const searchContainer = core.ui._makeElement('div', 'search-container');
-		const searchInput = core.ui._makeElement('input', 'search-input');
+		const searchContainer = core.ui.makeElement('div', 'search-container');
+		const searchInput = core.ui.makeElement('input', 'search-input');
 		searchInput.type = 'text';
 		searchInput.placeholder = 'Search modules...';
 
@@ -716,60 +716,60 @@ const core = {
 		main.appendChild(searchContainer);
 	})();
 
-	const header = core.ui.state.container.querySelector('.header');
+	const header = core.ui._state.container.querySelector('.header');
 	header.addEventListener('mousedown', (e) => {
 		if (e.target !== header) return;
 
-		core.ui.state.dragging = true;
-		const rect = core.ui.state.container.getBoundingClientRect();
-		core.ui.state.dragOffset = {
+		core.ui._state.dragging = true;
+		const rect = core.ui._state.container.getBoundingClientRect();
+		core.ui._state.dragOffset = {
 			x: e.clientX - rect.left,
 			y: e.clientY - rect.top
 		};
 	});
 
 	document.addEventListener('mousemove', (e) => {
-		if (!core.ui.state.dragging) return;
+		if (!core.ui._state.dragging) return;
 
-		const x = e.clientX - core.ui.state.dragOffset.x;
-		const y = e.clientY - core.ui.state.dragOffset.y;
-		core.ui.state.container.style.left = `${x}px`;
-		core.ui.state.container.style.top = `${y}px`;
+		const x = e.clientX - core.ui._state.dragOffset.x;
+		const y = e.clientY - core.ui._state.dragOffset.y;
+		core.ui._state.container.style.left = `${x}px`;
+		core.ui._state.container.style.top = `${y}px`;
 	});
 
 	document.addEventListener('mouseup', () => {
-		core.ui.state.dragging = false;
+		core.ui._state.dragging = false;
 	});
 
-	core.ui.state.container.querySelectorAll('.tab').forEach(tab => {
+	core.ui._state.container.querySelectorAll('.tab').forEach(tab => {
 		tab.addEventListener('click', () => {
-			core.ui.state.container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-			core.ui.state.container.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+			core.ui._state.container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+			core.ui._state.container.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
 			tab.classList.add('active');
 			const panelId = tab.getAttribute('data-tab');
-			core.ui.state.container.querySelector(`#${panelId}`).classList.add('active');
+			core.ui._state.container.querySelector(`#${panelId}`).classList.add('active');
 
-			const buttons = core.ui.state.container.querySelector('.buttons');
+			const buttons = core.ui._state.container.querySelector('.buttons');
 			if (panelId === 'output' || panelId === 'debug') {
 				buttons.style.display = 'block';
-				core.ui.state.thisLogId = `${panelId}-log`;
+				core.ui._state.thisLogId = `${panelId}-log`;
 			} else {
 				buttons.style.display = 'none';
-				core.ui.state.thisLogId = null;
+				core.ui._state.thisLogId = null;
 			}
 		});
 	});
 
-	core.ui.state.container.querySelector('[data-action="clear"]').addEventListener('click', () => {
-		if (!core.ui.state.thisLogId) return;
-		core.ui.state.logTextareas[core.ui.state.thisLogId.replace('-log', '')].value = '';
+	core.ui._state.container.querySelector('[data-action="clear"]').addEventListener('click', () => {
+		if (!core.ui._state.thisLogId) return;
+		core.ui._state.logTextareas[core.ui._state.thisLogId.replace('-log', '')].value = '';
 	});
 
-	core.ui.state.container.querySelector('[data-action="copy"]').addEventListener('click', () => {
-		if (!core.ui.state.thisLogId) return;
+	core.ui._state.container.querySelector('[data-action="copy"]').addEventListener('click', () => {
+		if (!core.ui._state.thisLogId) return;
 
-		const textarea = core.ui.state.logTextareas[core.ui.state.thisLogId.replace('-log', '')];
+		const textarea = core.ui._state.logTextareas[core.ui._state.thisLogId.replace('-log', '')];
 		textarea.select();
 
 		document.execCommand('copy');
@@ -779,21 +779,21 @@ const core = {
 
 // settings
 (() => {
-	const guiToggle = core.settings._addBind({
+	const guiToggle = core.settings.addBind({
 		id: 'UI Toggle Key',
 		tip: 'The key to toggle the visibility of the UI',
 		bind: 'insert'
 	});
 
 	guiToggle.onBind = () => {
-		const container = core.ui.state.container;
+		const container = core.ui._state.container;
 		container.style.display = container.style.display === 'none' ? 'flex' : 'none';
 	};
 })();
 
 // modules
 (() => {
-	const module1 = core.modules._add({
+	const module1 = core.modules.add({
 		id: 'Example Module 1',
 		tip: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
 	});
