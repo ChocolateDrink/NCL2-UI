@@ -5,6 +5,5 @@
 
 ### 28 January 2025
 ```ini
-[*] redid naming convention 
-[+] made it easier to fetch the ui
+[*] redid naming convention
 ```

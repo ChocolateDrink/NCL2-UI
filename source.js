@@ -1,5 +1,3 @@
-if (!window.ncl2core) window.ncl2core = {};
-
 const core = {
 	version: '1.0',
 
@@ -777,8 +775,6 @@ const core = {
 		document.execCommand('copy');
 		window.getSelection().removeAllRanges();
 	});
-
-	window.ncl2core = core;
 })();
 
 // settings
