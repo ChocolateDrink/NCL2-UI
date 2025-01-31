@@ -137,6 +137,7 @@ core.saves.init()  // Initialize auto-save
 
 
 ## Example Usage
+example usage is already provided in the `source.js` file
 
 ```js
 // Create a new module
